@@ -1,0 +1,4 @@
+[tools]
+python = "3.8"
+ruby = "latest"
+"ubi:adwinying/php" = "8.4.10"

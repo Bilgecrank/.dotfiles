@@ -1,0 +1,72 @@
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+
+d() {
+	docker compose -p "$(basename "$(realpath)")" "$@"
+}
+alias ssh-reload='ssh-add -e /usr/lib/ssh-keychain.dylib && ssh-add -s /usr/lib/ssh-keychain.dylib'
+
+project() {
+	case $1 in
+
+	rebuild)
+		echo "Rebuilding project."
+		d down -v
+		d build --no-cache
+		;;
+
+	restart)
+		echo "Restarting project."
+		d down -v
+		d up -d
+		;;
+
+	gitlab-test)
+		# Simulate running the tests in the gitlab pipeline.
+		d run --rm -e RAILS_ENV=test redmine rake db:drop db:create db:migrate redmine:plugins:migrate
+		d run --rm -e RAILS_ENV=test redmine rake portal:configure
+		d run --rm -e RAILS_ENV=test redmine rails test -f plugins/portal/test/"${2}" --verbose
+		;;
+
+	local-test)
+		# Set up environment for local testing.
+		d exec redmine bash -c "RAILS_ENV=test rake db:drop db:create db:migrate"
+		d exec redmine bash -c "RAILS_ENV=test rake redmine:plugins:migrate"
+		d exec redmine bash -c "RAILS_ENV=test rake portal:configure"
+		;;
+
+	test)
+		# Run a test in a locally prepared environment.
+		d exec redmine bash -c "RAILS_ENV=test rails test plugins/portal/test/${2} --verbose"
+		;;
+
+	console)
+		d exec redmine bash -c "rails console"
+		;;
+
+	configure)
+		d exec redmine bash -c "rake portal:configure"
+		;;
+
+	boom)
+		d down -v
+		d up postgres -d
+		sleep 1.0
+		d exec postgres bash -c "pg_restore -U redmine -d postgres -Cc -j 4 backup/redmine_development.sqlc --clean"
+		d up -d
+		;;
+
+	esac
+}
+
+# Mise
+eval "$(mise activate bash)"
+
+export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+export PATH="/opt/homebrew/opt/ansible@9/bin:$PATH"
+
+ssh-add -l | grep 'wlfGHDJsSPqLvXK22/j8t5S0zmrvt/qJUQrub8PjKB4' &>/dev/null
+if [ $? -eq 1 ]; then
+	echo "Adding "
+	ssh-add -s /usr/lib/ssh-keychain.dylib
+fi
+

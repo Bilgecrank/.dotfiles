@@ -1,0 +1,4 @@
+MY_SESSION_BUS_SOCKET=/tmp/dbus/dowen.session.usock
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+[[ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]] && . "/opt/homebrew/etc/profile.d/bash_completion.sh"
