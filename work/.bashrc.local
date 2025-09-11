@@ -55,6 +55,14 @@ project() {
 		d up -d
 		;;
 
+        make-sqlc)
+		d down -v
+		d up postgres -d
+		sqld=$(find . -type d -regex ".*/redmine-production-[0-9]\{8\}-[0-9]\{4\}")
+		sleep 1
+		d exec postgres bash -c "pg_restore -U redmine -d redmine_development -j 4 ${sqld}"
+		d exec postgres bash -c "pg_dump -U redmine -h postgres -d redmine_development -Fc -f /backup/redmine_development.sqlc"
+		d up -d
 	esac
 }
 
