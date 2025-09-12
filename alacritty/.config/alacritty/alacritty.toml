@@ -1,6 +1,9 @@
-# Font size
-[font]
-size = 10.0
+[general]
+# Run imports.
+import = [
+	"~/.config/alacritty/local.toml",
+	"~/.config/alacritty/themes/solarized-dark.toml"
+]
 
 [font.bold]
 family = "Hack Nerd Font Mono"
@@ -19,8 +22,3 @@ family = "Hack Nerd Font Mono"
 style = "Regular"
 
 
-[general]
-# Set default theme
-import = [
-    "~/.config/alacritty/themes/solarized-dark.toml"
-]
