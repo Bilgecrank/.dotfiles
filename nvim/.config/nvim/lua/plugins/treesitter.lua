@@ -20,6 +20,7 @@ return {
 				"ruby",
 				"dockerfile",
 				"yaml",
+				"norg",
 			},
 			-- Autoinstall languages that are not installed
 			auto_install = true,

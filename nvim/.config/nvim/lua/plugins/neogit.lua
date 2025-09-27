@@ -7,6 +7,6 @@ return {
 	},
 	config = function()
 		local neogit = require("neogit")
-		vim.keymap.set("n", "<leader>go", neogit.open, { desc = "Neo[G]it: [O]pen." })
+		vim.keymap.set("n", "<leader>gs", neogit.open, { desc = "Neo[G]it: [S]tart." })
 	end,
 }
