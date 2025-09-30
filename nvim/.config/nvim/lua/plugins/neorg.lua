@@ -10,7 +10,7 @@ return {
 				["core.dirman"] = {
 					config = {
 						workspaces = {
-							notes = "~/Documents/org",
+							notes = os.getenv("HOME") .. "/Documents/org",
 						},
 						default_workspace = "notes",
 					},
