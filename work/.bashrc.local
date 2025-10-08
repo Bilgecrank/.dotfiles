@@ -1,5 +1,5 @@
 export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
-
+export PATH="/Users/dowen/.cargo/bin:$PATH"
 d() {
 	docker compose -p "$(basename "$(realpath)")" "$@"
 }
