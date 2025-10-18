@@ -23,7 +23,7 @@ project() {
 	gitlab-test)
 		# Simulate running the tests in the gitlab pipeline.
 		d run --rm -e RAILS_ENV=test redmine rake db:drop db:create db:migrate redmine:plugins:migrate
-		d run --rm -e RAILS_ENV=test redmine rake portal:configure
+		d run --rm -e RAILS_ENV=test redmine rails data:migrate
 		d run --rm -e RAILS_ENV=test redmine rails test -f plugins/portal/test/"${2}" --verbose
 		;;
 
@@ -31,7 +31,7 @@ project() {
 		# Set up environment for local testing.
 		d exec redmine bash -c "RAILS_ENV=test rake db:drop db:create db:migrate"
 		d exec redmine bash -c "RAILS_ENV=test rake redmine:plugins:migrate"
-		d exec redmine bash -c "RAILS_ENV=test rake portal:configure"
+		d exec redmine bash -c "RAILS_ENV=test rails data:migrate"
 		;;
 
 	test)
@@ -44,7 +44,7 @@ project() {
 		;;
 
 	configure)
-		d exec redmine bash -c "rake portal:configure"
+		d exec redmine bash -c "rails data:migrate"
 		;;
 
 	boom)

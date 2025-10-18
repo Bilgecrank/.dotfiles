@@ -22,7 +22,6 @@ return {
 			lint.linters_by_ft = {
 				ruby = { "rubocop" },
 				ansible = { "ansible_lint" },
-				yaml = { "yamllint" },
 				markdown = { "markdownlint" },
 			}
 

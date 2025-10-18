@@ -202,11 +202,20 @@ return {
 						},
 					},
 				},
+				yamlls = {},
+				gitlab_ci_ls = {},
 			}
 			for server_name, config in pairs(servers) do
 				vim.lsp.config(server_name, config)
 				vim.lsp.enable(server_name)
 			end
+
+			-- for gitlab-ci-lsp
+			vim.filetype.add({
+				pattern = {
+					['.*%.gitlab%-ci%.ya?ml'] = 'yaml.gitlab',
+				},
+			})
 		end,
 	},
 }
