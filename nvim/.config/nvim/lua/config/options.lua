@@ -130,3 +130,10 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.opt_local.colorcolumn = "120"
 	end,
 })
+
+-- Recognize .bashrc.local as a .bashrc file
+vim.filetype.add({
+	pattern = {
+		['%.bashrc%.local'] = 'sh',
+	},
+})
