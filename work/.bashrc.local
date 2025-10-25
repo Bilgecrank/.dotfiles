@@ -6,6 +6,8 @@ d() {
 }
 alias ssh-reload='ssh-add -e /usr/lib/ssh-keychain.dylib && ssh-add -s /usr/lib/ssh-keychain.dylib'
 
+if test -f "${HOME}/.config/gitlab-info"; then source "${HOME}/.config/gitlab-info"; fi
+
 project() {
 	case $1 in
 
