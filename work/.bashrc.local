@@ -68,8 +68,6 @@ project() {
 	esac
 }
 
-# Mise
-eval "$(mise activate bash)"
 
 export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
 export PATH="/opt/homebrew/opt/ansible@9/bin:$PATH"
