@@ -1,13 +1,13 @@
 export EDITOR="nvim"
 
-if [ -z $SSH_AGENT_PID ] && [ -z $SSH_TTY ]; then  # if no agent & not in ssh
-	eval "$(ssh-agent -s)" > /dev/null
+if test -f "${HOME}/.config/.local.env"; then
+	source "${HOME}/.config/.local.env"
 fi
 
-if [ -f "${HOME}/.bash_profile.local" ]; then
+if test -f "${HOME}/.bash_profile.local"; then
 	source "${HOME}/.bash_profile.local"
 fi
 
-if [ -f "${HOME}/.bashrc" ]; then
+if test -f "${HOME}/.bashrc"; then
 	source "${HOME}/.bashrc"
 fi
