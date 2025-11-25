@@ -5,9 +5,6 @@ import = [
 	"~/.config/alacritty/themes/solarized-dark.toml"
 ]
 
-[font]
-size = 9
-
 [font.bold]
 family = "Hack Nerd Font"
 style = "Bold"
