@@ -1,5 +1,6 @@
-export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
 export PATH="/Users/dowen/.cargo/bin:$PATH"
+export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+export PATH="/opt/homebrew/opt/ansible@9/bin:$PATH"
 
 d() {
 	docker compose -p "$(basename "$(realpath)")" "$@"
@@ -26,6 +27,14 @@ project() {
 		d run --rm -e RAILS_ENV=test redmine rake db:drop db:create db:migrate redmine:plugins:migrate
 		d run --rm -e RAILS_ENV=test redmine rails data:migrate
 		d run --rm -e RAILS_ENV=test redmine rails test -f plugins/portal/test/"${2}" --verbose
+		;;
+
+	migrate-test)
+		if test -z "$2"; then printf "Gimmie a version number.\n" && exit 1; fi
+		# Set up environment for local migration testing.
+		d exec redmine bash -c "RAILS_ENV=test rake db:drop db:create db:migrate"
+		d exec redmine bash -c "RAILS_ENV=test rake redmine:plugins:migrate"
+		d exec redmine bash -c "RAILS_ENV=test rails data:migrate VERSION=${2}"
 		;;
 
 	local-test)
@@ -67,9 +76,6 @@ project() {
 		;;
 	esac
 }
-
-export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
-export PATH="/opt/homebrew/opt/ansible@9/bin:$PATH"
 
 ssh-add -l | grep 'wlfGHDJsSPqLvXK22/j8t5S0zmrvt/qJUQrub8PjKB4' &>/dev/null
 if [ $? -eq 1 ]; then

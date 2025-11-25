@@ -3,3 +3,6 @@ go = "latest"
 python = "3.8"
 ruby = "latest"
 "ubi:adwinying/php" = "8.4.10"
+
+[settings]
+idiomatic_version_file_enable_tools = ['ruby']
