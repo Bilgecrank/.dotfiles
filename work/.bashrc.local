@@ -43,6 +43,9 @@ project() {
 		d exec redmine bash -c "RAILS_ENV=test rake redmine:plugins:migrate"
 		d exec redmine bash -c "RAILS_ENV=test rails data:migrate"
 		;;
+	fresh-test)
+		project boom && project local-test
+		;;
 
 	test)
 		# Run a test in a locally prepared environment.

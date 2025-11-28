@@ -1,19 +1,2 @@
 [font]
-size = 13.0
-offset = { x = 1, y = 0}
-
-[font.bold]
-family = "CozetteCrossedSevenVectorBold"
-style = "Medium"
-
-[font.bold_italic]
-family = "CozetteCrossedSevenVectorBold"
-style = "Medium"
-
-[font.italic]
-family = "CozetteCrossedSevenVector"
-style = "Medium"
-
-[font.normal]
-family = "CozetteCrossedSevenVector"
-style = "Medium"
+size = 14.0
