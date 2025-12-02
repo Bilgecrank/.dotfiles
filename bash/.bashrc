@@ -1,7 +1,16 @@
 set -o vi
 
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
+ls() {
+	command ls --color=auto
+}
+grep() {
+	command grep --color=auto
+}
+
+dcull() {
+	docker stop "$(docker ps -a -q)"
+	docker rm "$(docker ps -a -q)"
+}
 
 if [ -f "${HOME}/.bashrc.local" ]; then
 	source "${HOME}/.bashrc.local"

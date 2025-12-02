@@ -5,6 +5,10 @@ import = [
 	"~/.config/alacritty/themes/solarized-dark.toml"
 ]
 
+[cursor.style]
+shape = "Block"
+blinking = "Always"
+
 [font.bold]
 family = "Hack Nerd Font"
 style = "Bold"
