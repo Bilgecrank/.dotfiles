@@ -1,11 +1,7 @@
 set -o vi
 
-ls() {
-	command ls --color=auto
-}
-grep() {
-	command grep --color=auto
-}
+alias ls="ls --color=auto"
+alias grep="grep --color=auto"
 
 dcull() {
 	docker stop "$(docker ps -a -q)"
@@ -17,7 +13,9 @@ if [ -f "${HOME}/.bashrc.local" ]; then
 fi
 
 # Starship
-eval "$(starship init bash)"
+if command -v starship &>/dev/null; then
+	eval "$(starship init bash)"
+fi
 
 # https://unix.stackexchange.com/questions/43601/how-can-i-set-my-default-shell-to-start-up-tmux
 if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
@@ -25,4 +23,6 @@ if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && 
 fi
 
 # Mise
-eval "$(mise activate bash)"
+if command -v mise &>/dev/null; then
+	eval "$(mise activate bash)"
+fi
