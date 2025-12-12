@@ -204,6 +204,12 @@ return {
 				},
 				yamlls = {},
 				gitlab_ci_ls = {},
+				-- npm install -g emmet-ls
+				emmet_ls = {},
+				-- npm install -g @herb-tools/language-server
+				-- herb_ls = {},
+				-- npm install -g typescript typescript-language-server
+				ts_ls = {},
 			}
 			for server_name, config in pairs(servers) do
 				vim.lsp.config(server_name, config)
