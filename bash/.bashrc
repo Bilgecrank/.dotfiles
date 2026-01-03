@@ -2,20 +2,19 @@ set -o vi
 
 alias ls="ls --color=auto"
 alias grep="grep --color=auto"
+d() {
+	docker compose -p "$(basename "$(realpath)")" "$@"
+}
 
 dcull() {
 	docker stop "$(docker ps -a -q)"
 	docker rm "$(docker ps -a -q)"
 }
 
-if [ -f "${HOME}/.bashrc.local" ]; then
-	source "${HOME}/.bashrc.local"
-fi
+test -f "${HOME}/.bashrc.local" && . "${HOME}/.bashrc.local"
 
 # Starship
-if command -v starship &>/dev/null; then
-	eval "$(starship init bash)"
-fi
+command -v starship &>/dev/null && eval "$(starship init bash)"
 
 # https://unix.stackexchange.com/questions/43601/how-can-i-set-my-default-shell-to-start-up-tmux
 if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
@@ -23,6 +22,4 @@ if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && 
 fi
 
 # Mise
-if command -v mise &>/dev/null; then
-	eval "$(mise activate bash)"
-fi
+command -v mise &>/dev/null && eval "$(mise activate bash)"

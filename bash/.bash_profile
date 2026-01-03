@@ -1,13 +1,5 @@
 export EDITOR="nvim"
 
-if test -f "${HOME}/.config/.local.env"; then
-	source "${HOME}/.config/.local.env"
-fi
-
-if test -f "${HOME}/.bash_profile.local"; then
-	source "${HOME}/.bash_profile.local"
-fi
-
-if test -f "${HOME}/.bashrc"; then
-	source "${HOME}/.bashrc"
-fi
+test -f "${HOME}/.config/.local.env" && . "${HOME}/.config/.local.env"
+test -f "${HOME}/.bash_profile.local" && . "${HOME}/.bash_profile.local"
+test -f "${HOME}/.bashrc" && . source "${HOME}/.bashrc"
