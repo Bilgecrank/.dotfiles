@@ -11,8 +11,7 @@ dcull() {
 	docker rm "$(docker ps -a -q)"
 }
 
-test -f ~/.bashrc.local && . ~/.bashrc.local
-
+test -f "${HOME}/.bashrc.local" && source "${HOME}/.bashrc.local"
 # Starship
 command -v starship &>/dev/null && eval "$(starship init bash)"
 
