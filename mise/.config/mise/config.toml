@@ -6,3 +6,52 @@ ruby = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ['ruby']
+
+[tasks.catchup]
+description = "Rebase the current branch onto origin/dev."
+run = [
+	'git fetch origin',
+	'git rebase origin/dev',
+]
+
+[tasks.build]
+description = "Create fresh builds of all the project images."
+run = [
+	'docker compose down -v',
+	'docker compose build --no-cache',
+]
+
+[tasks.restore]
+description = "Down/up the containers and restore to a recent sql dump."
+run = [
+	'docker compose down -v',
+	'docker compose up postgres -d',
+	'sleep 1.0',
+	'docker compose exec postgres bash -c "pg_restore -U redmine -d postgres -Cc -j 4 backup/redmine_development.sqlc --clean"',
+	'docker compose up -d',
+]
+
+[tasks.console]
+description = "Open a console in the container."
+usage = '''
+arg "<environment>" {
+	choices "test" "development"
+	default "development"
+}
+'''
+run = 'docker compose exec redmine bash -c "RAILS_ENV=${usage_environment} rails console"'
+
+[tasks.build_test]
+description = "Build the testing environment."
+run = [
+	'docker compose exec redmine bash -c "RAILS_ENV=test rake db:drop db:create db:migrate"',
+	'docker compose exec redmine bash -c "RAILS_ENV=test rake redmine:plugins:migrate"',
+	'docker compose exec redmine bash -c "RAILS_ENV=test rails data:migrate"',
+]
+
+[tasks.test]
+description = 'Run tests after build_test. Run with an argument specifying a relative path under plugins/portal/test to run a specific test.'
+usage = '''
+	flag "-f --file <file>" help="A specific file or dir to be tested instead of the whole suite."
+'''
+run = 'docker compose exec redmine bash -c "RAILS_ENV=test rails test plugins/portal/test/${usage_file} --verbose"'
