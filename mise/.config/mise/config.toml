@@ -25,8 +25,7 @@ run = [
 description = "Down/up the containers and restore to a recent sql dump."
 run = [
 	'docker compose down -v',
-	'docker compose up postgres -d',
-	'sleep 1.0',
+	'docker compose up postgres --wait',
 	'docker compose exec postgres bash -c "pg_restore -U redmine -d postgres -Cc -j 4 backup/redmine_development.sqlc --clean"',
 	'docker compose up -d',
 ]
@@ -41,13 +40,24 @@ arg "<environment>" {
 '''
 run = 'docker compose exec redmine bash -c "RAILS_ENV=${usage_environment} rails console"'
 
+[tasks.gitlab_test]
+description = "Run the test suite as it is in Gitlab."
+run = [
+	'docker compose up redmine -d',
+	'docker compose cp config/redmine_test.sqlc postgres:/backup/redmine_test.sqlc',
+	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails db:drop db:create"',
+	'docker compose exec postgres bash -c "pg_restore -U redmine -d redmine_test -j 4 /backup/redmine_test.sqlc"',
+	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails db:migrate redmine:plugins:migrate && rails data:migrate"',
+	'docker compose exec -e RUBYOPT="--disable-frozen-string-literal" -e RAILS_ENV=test redmine bash -c "rails test -f plugins/portal/test/"${2}" --verbose"',
+]
+
 [tasks.build_test]
 description = "Build the testing environment."
-run = [
+run = '''
 	'docker compose exec redmine bash -c "RAILS_ENV=test rake db:drop db:create db:migrate"',
 	'docker compose exec redmine bash -c "RAILS_ENV=test rake redmine:plugins:migrate"',
 	'docker compose exec redmine bash -c "RAILS_ENV=test rails data:migrate"',
-]
+'''
 
 [tasks.test]
 description = 'Run tests after build_test. Run with an argument specifying a relative path under plugins/portal/test to run a specific test.'

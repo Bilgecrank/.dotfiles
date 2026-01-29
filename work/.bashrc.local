@@ -24,8 +24,10 @@ project() {
 
 	gitlab-test)
 		# Simulate running the tests in the gitlab pipeline.
-		d run --rm -e RAILS_ENV=test redmine rake db:drop db:create db:migrate redmine:plugins:migrate
-		d run --rm -e RAILS_ENV=test redmine rails data:migrate
+		d run --rm -e RAILS_ENV=test redmine rake db:drop db:create
+		d cp config/redmine_test.sqlc postgres:/backup/redmine_test.sqlc
+		d run --rm postgres bash -c "pg_restore -U redmine -h postgres -d redmine_development -Cc -j 4 /backup/redmine_test.sqlc"
+		d run --rm -e RAILS_ENV=test redmine rails db:migrate redmine:plugins:migrate && data:migrate
 		d run --rm -e RAILS_ENV=test redmine rails test -f plugins/portal/test/"${2}" --verbose
 		;;
 
