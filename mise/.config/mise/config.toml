@@ -7,7 +7,7 @@ ruby = "latest"
 [settings]
 idiomatic_version_file_enable_tools = ['ruby']
 
-[tasks.catchup]
+[tasks.rebase]
 description = "Rebase the current branch onto origin/dev."
 run = [
 	'git fetch origin',
@@ -21,12 +21,35 @@ run = [
 	'docker compose build --no-cache',
 ]
 
+[tasks.load]
+description = "Load in a dump from production to the portal."
+usage = '''
+	flag "-r --replace" help="Replace the redmine_development.sqlc file with the data from this load."
+'''
+run = [
+'docker compose down -v',
+'docker compose up postgres --wait',
+'docker compose exec postgres bash -c "pg_restore -U redmine -d redmine_development -j 4 $(find . -type d -regex ".*/redmine-production-[0-9]\{8\}-[0-9]\{4\}")"',
+'''
+if [[ "${usage_replace:-false}" == "true" ]]; then
+	mise run replace
+fi
+''',
+'docker compose up -d',
+]
+
+
+[tasks.replace]
+description = "Replace the current redmine_development.sqlc file with the data in the postgres container."
+env.PGPASS= 'redmine' 
+run = 'docker compose exec -e PGPASSWORD=$PGPASS postgres bash -c "pg_dump -U redmine -h postgres -d redmine_development -Fc -f /backup/redmine_development.sqlc"'
+
 [tasks.restore]
-description = "Down/up the containers and restore to a recent sql dump."
+description = "Down/up the containers and restore to the redmine_development.sqlc sql dump."
 run = [
 	'docker compose down -v',
 	'docker compose up postgres --wait',
-	'docker compose exec postgres bash -c "pg_restore -U redmine -d postgres -Cc -j 4 backup/redmine_development.sqlc --clean"',
+	'docker compose exec postgres bash -c "pg_restore -U redmine -d postgres -Cc -j 4 backup/redmine_development.sqlc"',
 	'docker compose up -d',
 ]
 
@@ -40,28 +63,68 @@ arg "<environment>" {
 '''
 run = 'docker compose exec redmine bash -c "RAILS_ENV=${usage_environment} rails console"'
 
-[tasks.gitlab_test]
-description = "Run the test suite as it is in Gitlab."
+
+[tasks.db]
+description = "Open a console in the container."
+usage = '''
+arg "<environment>" {
+	choices "test" "development"
+	default "development"
+}
+'''
+run = 'docker compose exec redmine bash -c "RAILS_ENV=${usage_environment} rails db"'
+
+
+[tasks.setup]
+description = 'Setup 8 databases to create the testing environment.'
+quiet = true
+usage = '''
+	flag "-s --singular" help="Create only one database and disable parallel testing."
+	flag "-m --migrate <migration>" help="Run data migrations to a specific version."
+'''
+
+run = '''
+if [[ "${usage_singular:-false}" == "true" ]]; then
+	mise run setup:single ${usage_migrate}
+else
+	mise run setup:parallel ${usage_migrate}
+fi
+'''
+
+[tasks.'setup:single']
+description = "Set up a single database through the setup task, and optionally specify a migration."
+usage = '''
+	arg "[migrate]"
+'''
+hide = true
 run = [
-	'docker compose up redmine -d',
-	'docker compose cp config/redmine_test.sqlc postgres:/backup/redmine_test.sqlc',
-	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails db:drop db:create"',
-	'docker compose exec postgres bash -c "pg_restore -U redmine -d redmine_test -j 4 /backup/redmine_test.sqlc"',
-	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails db:migrate redmine:plugins:migrate && rails data:migrate"',
-	'docker compose exec -e RUBYOPT="--disable-frozen-string-literal" -e RAILS_ENV=test redmine bash -c "rails test -f plugins/portal/test/"${2}" --verbose"',
+	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails db:drop db:create db:migrate"',
+	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails redmine:plugins:migrate"',
+	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails data:migrate ${usage_migrate:+VERSION=$usage_migrate}"',
 ]
 
-[tasks.build_test]
-description = "Build the testing environment."
-run = '''
-	'docker compose exec redmine bash -c "RAILS_ENV=test rake db:drop db:create db:migrate"',
-	'docker compose exec redmine bash -c "RAILS_ENV=test rake redmine:plugins:migrate"',
-	'docker compose exec redmine bash -c "RAILS_ENV=test rails data:migrate"',
+[tasks.'setup:parallel']
+description = "Set up a multiple databases through the setup task, and optionally specify a migration."
+usage = '''
+	arg "[migrate]"
 '''
+hide = true
+run = [
+	'docker compose exec -e RAILS_ENV=test redmine bash -c "rails parallel:drop[8] parallel:create[8] parallel:migrate[8]"',
+	"docker compose exec -e RAILS_ENV=test redmine bash -c \"rails parallel:rake['redmine:plugins:migrate',8]\"",
+	"docker compose exec -e RAILS_ENV=test redmine bash -c \"rails parallel:rake['data:migrate',8] ${usage_migrate:+VERSION=$usage_migrate}\"",
+]
 
 [tasks.test]
 description = 'Run tests after build_test. Run with an argument specifying a relative path under plugins/portal/test to run a specific test.'
 usage = '''
 	flag "-f --file <file>" help="A specific file or dir to be tested instead of the whole suite."
+        flag "-p --parallel" help="Run tests in parallel to speed them up. NOTE: Does not support line-by-line testing."
 '''
-run = 'docker compose exec redmine bash -c "RAILS_ENV=test rails test plugins/portal/test/${usage_file} --verbose"'
+run = '''
+if [[ "${usage_parallel:-false}" == "true" ]]; then
+	docker compose exec -e RUBYOPT=\"--disable-frozen-string-literal\" -e RAILS_ENV=test redmine bash -c \"parallel_test -n 8 -o '-v' plugins/portal/test/${usage_file}\"
+else
+	docker compose exec -e RUBYOPT="--disable-frozen-string-literal" -e RAILS_ENV=test redmine bash -c " rails test plugins/portal/test/${usage_file} --verbose"
+fi
+'''
