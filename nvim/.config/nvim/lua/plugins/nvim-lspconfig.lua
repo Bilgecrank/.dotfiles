@@ -210,6 +210,7 @@ return {
 				-- herb_ls = {},
 				-- npm install -g typescript typescript-language-server
 				ts_ls = {},
+				rust_analyzer = {},
 			}
 			for server_name, config in pairs(servers) do
 				vim.lsp.config(server_name, config)
