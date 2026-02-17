@@ -42,7 +42,7 @@ fi
 
 [tasks.replace]
 description = "Replace the current redmine_development.sqlc file with the data in the postgres container."
-env.PGPASS= 'redmine' 
+env.PGPASS= 'redmine'
 run = 'docker compose exec -e PGPASSWORD=$PGPASS postgres bash -c "pg_dump -U redmine -h postgres -d redmine_development -Fc -f /backup/redmine_development.sqlc"'
 
 [tasks.restore]
@@ -56,6 +56,7 @@ run = [
 
 [tasks.console]
 description = "Open a console in the container."
+alias = "c"
 usage = '''
 arg "<environment>" {
 	choices "test" "development"
@@ -86,9 +87,9 @@ usage = '''
 
 run = '''
 if [[ "${usage_singular:-false}" == "true" ]]; then
-	mise run setup:single ${usage_migrate}
+	mise run setup:single "${usage_migrate}"
 else
-	mise run setup:parallel ${usage_migrate}
+	mise run setup:parallel "${usage_migrate}"
 fi
 '''
 
@@ -118,14 +119,32 @@ run = [
 
 [tasks.test]
 description = 'Run tests after build_test. Run with an argument specifying a relative path under plugins/portal/test to run a specific test.'
+quiet = true
 usage = '''
 	flag "-f --file <file>" help="A specific file or dir to be tested instead of the whole suite."
         flag "-p --parallel" help="Run tests in parallel to speed them up. NOTE: Does not support line-by-line testing."
 '''
 run = '''
 if [[ "${usage_parallel:-false}" == "true" ]]; then
-	docker compose exec -e RUBYOPT=\"--disable-frozen-string-literal\" -e RAILS_ENV=test redmine bash -c \"parallel_test -n 8 -o '-v' plugins/portal/test/${usage_file}\"
+	mise run test:parallel "${usage_file}"
 else
-	docker compose exec -e RUBYOPT="--disable-frozen-string-literal" -e RAILS_ENV=test redmine bash -c " rails test plugins/portal/test/${usage_file} --verbose"
+	mise run test:single "${usage_file}"
 fi
 '''
+
+
+[tasks.'test:single']
+description = "Run tests using the Rails test runner."
+usage = '''
+	arg "[file]" help="A specific file or dir to be tested instead of the whole suite."
+'''
+hide = true
+run = 'docker compose exec -e RUBYOPT="--disable-frozen-string-literal" -e RAILS_ENV=test redmine bash -c "rails test plugins/portal/test/${usage_file} --verbose"'
+
+[tasks.'test:parallel']
+description = "Run tests using the parallel_test process with 8 Rails test runners in parallel."
+usage = '''
+	arg "[file]" help="A specific file or dir to be tested instead of the whole suite."
+'''
+hide = true
+run = "docker compose exec -e RUBYOPT=\"--disable-frozen-string-literal\" -e RAILS_ENV=test redmine bash -c \"parallel_test -n 8 -o '-v' plugins/portal/test/${usage_file}\""
