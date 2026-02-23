@@ -11,7 +11,6 @@ dcull() {
 	docker rm "$(docker ps -a -q)"
 }
 
-test -f "${HOME}/.bashrc.local" && source "${HOME}/.bashrc.local"
 # Starship
 command -v starship &>/dev/null && eval "$(starship init bash)"
 
@@ -22,3 +21,5 @@ fi
 
 # Mise
 command -v mise &>/dev/null && eval "$(mise activate bash)"
+
+test -f "${HOME}/.bashrc.local" && source "${HOME}/.bashrc.local"
