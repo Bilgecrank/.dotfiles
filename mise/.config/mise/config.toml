@@ -7,6 +7,9 @@ ruby = "latest"
 [settings]
 idiomatic_version_file_enable_tools = ['ruby']
 
+[settings.ruby]
+compile = false
+
 [tasks.rebase]
 description = "Rebase the current branch onto origin/dev."
 run = [
@@ -18,7 +21,7 @@ run = [
 description = "Create fresh builds of all the project images."
 run = [
 	'docker compose down -v',
-	'docker compose build --no-cache',
+	'docker compose build --no-cache --build-arg CI_REPO="$CI_REPO"',
 ]
 
 [tasks.load]

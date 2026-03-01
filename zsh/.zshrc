@@ -28,7 +28,7 @@ if command -v tmux &>/dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && 
 fi
 
 # Starship
-command -v starship &>/dev/null && eval "$(starship init zsh)"
+#command -v starship &>/dev/null && eval "$(starship init zsh)"
 
 # Mise
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
